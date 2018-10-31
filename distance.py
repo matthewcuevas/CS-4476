@@ -19,7 +19,7 @@ def get_distance(edges1, edges2):
     return directed_hausdorff(edges1, edges2)
 
 im1 = io.imread('whitepeas1.png')
-im2 = io.imread('whitepeas2.png')
+im2 = io.imread('whitepeas3.png')
 
 plot.subplot(2, 2, 1)
 plot.imshow(im1)
