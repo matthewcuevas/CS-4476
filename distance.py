@@ -18,8 +18,8 @@ def get_distance(edges1, edges2):
 
     return err
 
-im1path = 'chickpeas1.png'
-im2path = 'whitepeas1.png'
+im1path = 'whitepeas1.png'
+im2path = 'whitepeas2.png'
 im1 = io.imread(im1path)
 im2 = io.imread(im2path)
 # im2 = np.random.random(im1.shape)
