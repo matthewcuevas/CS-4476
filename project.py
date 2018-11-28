@@ -7,6 +7,7 @@ from scipy import misc
 from skimage import feature, img_as_float, color
 from skimage.filters import roberts, sobel, threshold_otsu, threshold_adaptive
 from sklearn import tree, neural_network, neighbors, metrics
+from sklearn.datasets.base import load_data
 from sklearn.decomposition import FastICA as ICA
 from sklearn.decomposition.pca import PCA
 
@@ -63,14 +64,7 @@ def get_dataset_from_local_storage(num_category, num_lighting_conditions, filter
             filename = filter + ("-00%02d-%02d.png" % (category, lighting_condition))
             # print filename
             im = misc.imread(image_directory + filename)
-            # print image_directory + filename
-            # plt.figure()
-            # plt.imshow(im)
-            # plt.show()
-            # plt.close()
-            # print im.shape
             im = im.flatten()
-            # print im.shape
             images[index] = im
             labels[index] = category
             index += 1
@@ -264,6 +258,14 @@ def preprocessing():
         specificimname = srcim[-11:]
         plt.imsave('./' + algo + '/' + algo + '-' + specificimname, im, cmap='Greys')
 
+def convert_to_npy(filter):
+    training_data, training_label, testing_data, testing_label = get_dataset_from_local_storage(
+        num_category, num_lighting_conditions, filter=filter)
+    np.save(filter + '_training_data.npy', training_data)
+    np.save(filter + '_training_label.npy', training_label)
+    np.save(filter + '_testing_data.npy', testing_data)
+    np.save(filter + '_testing_label.npy', testing_label)
+
 def run_experiment(training_data, training_label, testing_data, testing_label, dimensionality_reduction=None):
     if dimensionality_reduction == 'PCA':
         print "Using PCA to reduce dimensionality"
@@ -275,13 +277,34 @@ def run_experiment(training_data, training_label, testing_data, testing_label, d
     neural_net(training_data, training_label, testing_data, testing_label)
     k_nearest_neighbors(training_data, training_label, testing_data, testing_label)
 
-if __name__ == "__main__":
-    num_category = 20
-    num_lighting_conditions = 20
+
+def save_images_to_npy(num_category, num_lighting_conditions):
     # retrieve_images_from_web(num_category, num_lighting_conditions)
     # preprocessing()
-    training_data, training_label, testing_data, testing_label = get_dataset_from_local_storage(
-        num_category, num_lighting_conditions, filter='roberts')
-    run_experiment(training_data, training_label, testing_data, testing_label)
-    # run_experiment(training_data, training_label, testing_data, testing_label, dimensionality_reduction='PCA')
-    # run_experiment(training_data, training_label, testing_data, testing_label, dimensionality_reduction='ICA')
+    filters = ['canny', 'sobel', 'roberts']
+    for filter in filters:
+        convert_to_npy(filter)
+
+
+def load_npy_file(filter):
+    training_data = np.load(filter + '_training_data.npy')
+    training_label = np.load(filter + '_training_data.npy')
+    testing_data = np.load(filter + '_testing_data.npy')
+    testing_label = np.load(filter + '_testing_label.npy')
+
+    return training_data, training_label, testing_data, testing_label
+
+if __name__ == "__main__":
+    # Run this part only once and comment it out after
+    num_category, num_lighting_conditions = 2, 2
+    save_images_to_npy(num_category, num_lighting_conditions)
+
+    # Here are the codes for actual experiments
+    filters = ['canny', 'sobel', 'roberts']
+    for filter in filters:
+        print "Experimenting with", filter, "filter"
+        training_data, training_label, testing_data, testing_label = load_npy_file(filter)
+        run_experiment(training_data, training_label, testing_data, testing_label)
+        run_experiment(training_data, training_label, testing_data, testing_label, dimensionality_reduction='PCA')
+        run_experiment(training_data, training_label, testing_data, testing_label, dimensionality_reduction='ICA')
+        print "Experimenting with", filter, "filter... Done!"
